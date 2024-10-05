@@ -4,8 +4,16 @@ from astropy.coordinates import SkyCoord
 import astropy.units as u
 import numpy as np
 
+# Function to safely get integer input
+def safe_input(prompt, cast_type=int):
+    while True:
+        try:
+            return cast_type(input(prompt))
+        except ValueError:
+            print(f"Invalid input. Please enter a {cast_type.__name__}.")
+
 # User inputs the number of stars
-numOfStars = int(input("Enter the number of stars: "))
+numOfStars = safe_input("Enter the number of stars: ", int)
 
 # Array to store all star details in a nested format
 stars_data = []
@@ -14,17 +22,20 @@ stars_data = []
 for i in range(numOfStars): 
     # Input: Name, x, y, z
     name = input(f"Enter name of star {i+1}: ")
-    x = float(input(f"Enter x-coordinate (Right Ascension (degrees)) of star {i+1}: "))
-    y = float(input(f"Enter y-coordinate (Declination (degrees)) of star {i+1}: "))
-    z = float(input(f"Enter z-coordinate (distance from exoplanet) of star {i+1}: "))
+    x = safe_input(f"Enter x-coordinate (Right Ascension (degrees)) of star {i+1}: ", float)
+    y = safe_input(f"Enter y-coordinate (Declination (degrees)) of star {i+1}: ", float)
+    z = safe_input(f"Enter z-coordinate (distance from exoplanet) of star {i+1}: ", float)
     
     # Append the star details as a list to the nested array
     stars_data.append([name, x, y, z])
-
+lw1 = safe_input("Enter the width of the line: ", float)
+MS = safe_input("Enter the size of the star: ", float)
 # Output for testing
 print("Stars entered:")
 for star in stars_data:
     print(f"Name: {star[0]}, X: {star[1]}, Y: {star[2]}, Z: {star[3]}")
+
+
 
 # Function to plot stars on a chart and allow interaction
 def plot_star_chart(stars_data):
@@ -56,7 +67,7 @@ def plot_star_chart(stars_data):
     for star in stars_data:
         # Use the star's x and y as RA and Dec, respectively
         coord = SkyCoord(ra=star[1]*u.degree, dec=star[2]*u.degree)
-        ax.plot(coord.ra.deg, coord.dec.deg, marker='.', color='#FFFFFF', markersize='10')  # White star-shaped point
+        ax.plot(coord.ra.deg, coord.dec.deg, marker='.', color='#FFFFFF', markersize=MS)  # White star-shaped point
         # Annotate star name and distance (z coordinate)
         ax.annotate(f"{star[0]} (z: {star[3]} ly)", (coord.ra.deg, coord.dec.deg), fontsize=6, color='white')  # Set annotation color to white
         
@@ -95,7 +106,7 @@ def plot_star_chart(stars_data):
         closest_star_idx = np.argmin(distances)
 
         # The star remains white regardless of being clicked
-        ax.plot(star_coords[closest_star_idx][0], star_coords[closest_star_idx][1], marker='.', color='#FFFFFF', markersize='10')  # Mark with a white star-shaped point
+        ax.plot(star_coords[closest_star_idx][0], star_coords[closest_star_idx][1], marker='.', color='#FFFFFF', markersize=MS)  # Mark with a white star-shaped point
         selected_stars.append(closest_star_idx)
 
         # Draw lines between all selected stars
@@ -103,7 +114,7 @@ def plot_star_chart(stars_data):
             star1 = star_coords[selected_stars[-2]]
             star2 = star_coords[selected_stars[-1]]
             # Draw light gray line between selected stars
-            line, = ax.plot([star1[0], star2[0]], [star1[1], star2[1]], color='lightgray', lw=0.5)
+            line, = ax.plot([star1[0], star2[0]], [star1[1], star2[1]], color='lightgray', lw=lw1)
             lines.append((star1, star2))  # Store the star coordinates of the line
             line_objects.append(line)  # Store the actual line object for later removal
 
