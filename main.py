@@ -1,3 +1,6 @@
+import matplotlib
+matplotlib.use('TkAgg')  # Use a backend that supports interactivity
+
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -46,30 +49,23 @@ def safe_input(prompt, cast_type=int):
         except ValueError:
             print(f"Invalid input. Please enter a {cast_type.__name__}.")
 
-# Get image path from user
-image_path = input("Enter the path to your image file: ")  # User inputs the file directory
-stars = detect_stars(image_path)
+# Function to get star data from user
+def get_star_data():
+    num_of_stars = safe_input("Enter the number of stars: ", int)
+    stars_data = []
 
-# Get star data in desired format
-numOfStars = len(stars)
-stars_data = []
+    for i in range(num_of_stars):
+        name = input(f"Enter name of star {i + 1}: ")
+        x = safe_input(f"Enter x-coordinate (Right Ascension) of star {i + 1}: ", float)
+        y = safe_input(f"Enter y-coordinate (Declination) of star {i + 1}: ", float)
+        z = safe_input(f"Enter z-coordinate (distance) of star {i + 1}: ", float)
 
-for i, (x, y) in enumerate(stars):
-    z = np.random.randint(100, 250)  # Random z-coordinate for now
-    stars_data.append([f'Star{i+1}', x, y, z])
-
-# Print star data
-print(numOfStars)
-for star in stars_data:
-    print("*****************************")
-    print(f"Star Name:    ", star[0])
-    print(f"Star X-Cords: ", star[1])
-    print(f"Star Y-Cords: ", star[2])
-    print(f"Star Z-Cords: ", star[3])
-    print("*****************************")
+        stars_data.append([name, x, y, z])
+    
+    return stars_data
 
 # Now plot the stars
-def plot_star_chart(stars_data):
+def plot_star_chart(stars_data, line_width, star_size):
     fig, ax = plt.subplots(figsize=(8, 8))
 
     # Set the background colors
@@ -79,7 +75,7 @@ def plot_star_chart(stars_data):
     # Set title, x-label, and y-label colors to white
     ax.set_title('Exoplanet Star Chart', color='white')
 
-    # Create a TextBox for title input (smaller and positioned at the bottom left)
+    # Create a TextBox for title input
     ax_title = plt.axes([0.1, 0.01, 0.3, 0.05])  # [left, bottom, width, height]
     text_box = TextBox(ax_title, 'Rename Your Constellations:', initial='(insert name) constellation')
 
@@ -96,8 +92,7 @@ def plot_star_chart(stars_data):
 
     for star in stars_data:
         # Use the star's x and y as RA and Dec, respectively
-        ax.plot(star[1], star[2], marker='.', color='#FFFFFF', markersize=5)  # White star-shaped point
-        # Annotate star name and distance (z coordinate)
+        ax.plot(star[1], star[2], marker='.', color='#FFFFFF', markersize=star_size)  # White star-shaped point
         ax.annotate(f"{star[0]} (z: {star[3]} ly)", (star[1], star[2]), fontsize=6, color='white')  # Set annotation color to white
         
         # Store the coordinates for click detection
@@ -119,7 +114,7 @@ def plot_star_chart(stars_data):
         
         # Check if user clicked near a line
         for i, (line, (star1, star2)) in enumerate(zip(line_objects, lines)):
-            # Check if the click is close to the line (using a larger tolerance)
+            # Calculate the distance from the click to the line
             d_numerator = (star2[1] - star1[1]) * click_x - (star2[0] - star1[0]) * click_y + star2[0] * star1[1] - star2[1] * star1[0]
             d_denominator = np.sqrt((star2[1] - star1[1]) ** 2 + (star2[0] - star1[0]) ** 2)
 
@@ -129,7 +124,7 @@ def plot_star_chart(stars_data):
 
             d = np.abs(d_numerator) / d_denominator  # Compute distance to line
 
-            if d < 1.5:  # Increased tolerance to detect click near the line
+            if d < 2.5:  # Increased tolerance to detect click near the line
                 # Remove the line and redraw
                 line.remove()
                 del line_objects[i]  # Remove the line from the list of line objects
@@ -141,8 +136,8 @@ def plot_star_chart(stars_data):
         distances = [np.sqrt((click_x - sx)**2 + (click_y - sy)**2) for sx, sy in star_coords]
         closest_star_idx = np.argmin(distances)
 
-        # The star remains white regardless of being clicked
-        ax.plot(star_coords[closest_star_idx][0], star_coords[closest_star_idx][1], marker='.', color='#FFFFFF', markersize=5)  # Mark with a white star-shaped point
+        # Mark the closest star
+        ax.plot(star_coords[closest_star_idx][0], star_coords[closest_star_idx][1], marker='.', color='#FFFFFF', markersize=star_size)  # Mark with a white star-shaped point
         selected_stars.append(closest_star_idx)
 
         # Draw lines between all selected stars
@@ -153,7 +148,7 @@ def plot_star_chart(stars_data):
             # Avoid drawing a line if the two stars are the same
             if star1 != star2:
                 # Draw light gray line between selected stars
-                line, = ax.plot([star1[0], star2[0]], [star1[1], star2[1]], color='lightgray', lw=0.5)
+                line, = ax.plot([star1[0], star2[0]], [star1[1], star2[1]], color='lightgray', lw=line_width)
                 lines.append((star1, star2))  # Store the star coordinates of the line
                 line_objects.append(line)  # Store the actual line object for later removal
 
@@ -183,5 +178,39 @@ def plot_star_chart(stars_data):
     # Show the plot
     plt.show()
 
-# Call the function to display the chart and enable interaction
-plot_star_chart(stars_data)
+# Main Program
+def main():
+    print("Choose an option:")
+    print("1: Input star data manually")
+    print("2: Upload an image to detect stars")
+
+    option = input("Enter 1 or 2: ")
+
+    if option == '1':
+        stars_data = get_star_data()
+        line_width = safe_input("Enter the line width: ", float)
+        star_size = safe_input("Enter the size of the stars: ", float)
+    elif option == '2':
+        # Get image path from user
+        image_path = input("Enter the path to your image file: ")  # User inputs the file directory
+        stars = detect_stars(image_path)
+
+        # Prepare star data for plotting
+        numOfStars = len(stars)
+        stars_data = []
+
+        for i, (x, y) in enumerate(stars):
+            z = np.random.randint(100, 250)  # Random z-coordinate for now
+            stars_data.append([f'Star{i+1}', x, y, z])
+        
+        line_width = safe_input("Enter the line width: ", float)
+        star_size = safe_input("Enter the size of the stars: ", float)
+    else:
+        print("Invalid option selected.")
+        return
+
+    # Call the function to display the chart and enable interaction
+    plot_star_chart(stars_data, line_width, star_size)
+
+if __name__ == "__main__":
+    main()
