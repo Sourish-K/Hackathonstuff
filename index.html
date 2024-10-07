@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Star Detection</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="/static/script.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <h1 id="title">Star Detection</h1>
+        <div class="options">
+            <button id="manual-btn">Manual Mode</button>
+            <button id="auto-btn">Automatic Mode</button>
+        </div>
+
+        <div id="manual-input" class="input-section hidden">
+            <h2>Manual Mode</h2>
+            <label for="total-stars">Enter Number of Stars:</label>
+            <input type="number" id="total-stars" placeholder="Number of stars" required />
+            
+            <!-- Star input fields and navigation -->
+            <div class="star-navigation">
+                <button id="prev-star-btn" class="arrow-btn">&larr;</button>
+                <div id="star-inputs"></div>
+                <button id="next-star-btn" class="arrow-btn">&rarr;</button>
+            </div>
+            
+            <!-- Line width and star size inputs for manual mode -->
+            <label for="manual-line-width">Line Width:</label>
+            <input type="number" id="manual-line-width" placeholder="Enter line width" required />
+            
+            <label for="manual-star-size">Star Size:</label>
+            <input type="number" id="manual-star-size" placeholder="Enter star size" required />
+        </div>
+
+        <div id="auto-input" class="input-section hidden">
+            <h2>Automatic Mode</h2>
+            <label for="file-upload" class="paperclip-label">
+                <img src="/static/paperclip.png" alt="paperclip icon" />
+            </label>
+            <input type="file" id="file-upload" class="file-upload-input" accept=".jpg, .jpeg, .png" required />
+            <span id="file-name"></span> <!-- Added span to display the file name -->
+
+            <label for="auto-line-width">Line Width:</label>
+            <input type="number" id="auto-line-width" placeholder="Enter line width" required />
+
+            <label for="auto-star-size">Star Size:</label>
+            <input type="number" id="auto-star-size" placeholder="Enter star size" required />
+        </div>
+
+        <button id="submit-btn" class="hidden">Submit</button>
+        <div id="message"></div> <!-- To display success or error messages -->
+    </div>
+</body>
+</html>
